@@ -22,10 +22,8 @@ module alu(
     input [31:0] SrcA,
     input [31:0] SrcB,
     output reg [31:0] Result,
-    output zero,
     input [2:0] ALUControl
     );
-	 assign zero = Result == 0;
 	always @(*) begin
 		case(ALUControl)
 		0 : Result = SrcA & SrcB;
