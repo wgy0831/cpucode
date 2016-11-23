@@ -24,6 +24,7 @@ module ifu(
     input [31:0] Ldata,
     input Clk,
     input Clr,
+	 input stall,
 	 input [1:0] PCControl,
 	 output reg [31:0] PC,
 	 output [31:0] PC2Reg
@@ -32,6 +33,7 @@ module ifu(
 	assign PCa4 = PC + 4;
 	assign PC2Reg = PC + 4;
 	always @(posedge Clk)
+	if (!stall)
 	if (Clr) PC <= 32'h00003000;
 	else
 		case (PCControl)

@@ -52,8 +52,8 @@ module grf(
 			$display("$%d <= %h", RD, WData);
 		end
 	end
-	assign RData1 = RS1 == 0 ? 0 : __reg[RS1];
-	assign RData2 = RS2 == 0 ? 0 : __reg[RS2];
+	assign RData1 = RS1 == 0 ? 0 : RegWrite && RS1 == RD ? WData : __reg[RS1];
+	assign RData2 = RS2 == 0 ? 0 : RegWrite && RS2 == RD ? WData : __reg[RS2];
 
 
 endmodule

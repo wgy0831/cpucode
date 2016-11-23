@@ -30,7 +30,7 @@ module ControllerD(
 			6'b000011: PCControl = 3;//jal
 			6'b000010: PCControl = 3; //j
 			6'b000000: //special
-				if (Funct == 001001 | Funct == 001000) PCControl = 2;
+				if (Funct == 6'b001001 || Funct == 6'b001000) PCControl = 2;
 				else PCControl = 0;
 			default: PCControl = 0;
 		endcase
