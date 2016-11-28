@@ -18,17 +18,30 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
+`define beq     6'b000100
+`define jal     6'b000011
+`define j       6'b000010
+`define special 6'b000000
+`define sltiu   6'b001011
+`define ori     6'b001101
+`define lw      6'b100011
+`define sw      6'b101011
+`define addu    6'b100001
+`define subu    6'b100011
+`define sll     6'b000000
+`define jr      6'b001000
+`define lui     6'b001111
 module decoder(
     input [31:0] Instr,
-    output [3:0] InstrType
+    output [3:0] InstrType //2 means imm, 1 means r, 3 means bxx, 4 means load
     );
 	always @(*) begin
 		case (Instr[31:26])
-			6'b001111: InstrType = 2;
-			6'b001101: InstrType = 2;
-			6'b000000: InstrType = 1;
-			6'b000100: InstrType = 3;
-			6'b100011: InstrType = 4;
+			`lui: InstrType = 2;
+			`ori: InstrType = 2;
+			`special: InstrType = 1;
+			`beq: InstrType = 3;
+			`lw: InstrType = 4;
 			default: InstrType = 0;
 		endcase
 	end
