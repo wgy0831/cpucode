@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    14:12:28 11/16/2016 
+// Create Date:    16:43:39 11/30/2016 
 // Design Name: 
-// Module Name:    ext 
+// Module Name:    cmp 
 // Project Name: 
 // Target Devices: 
 // Tool versions: 
@@ -18,10 +18,16 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module ext(
-    input [15:0] imm16,
-    input extcon,
-    output [31:0] extout
+`define beq 3'b000
+module cmp(
+    input [3:0] btype,
+    input [31:0] RData1,
+    input [31:0] RData2,
+    output reg cmpout
     );
-	assign extout = {{16{extcon?imm16[15]:0}}, imm16};
+	always @(*)
+	case (btype)
+		`beq: cmpout = RData1 == RData2;
+		default cmpout = 0;
+	endcase
 endmodule

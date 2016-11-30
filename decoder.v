@@ -31,17 +31,24 @@
 `define sll     6'b000000
 `define jr      6'b001000
 `define lui     6'b001111
+`define op 31:26
+`define funct 5:0
 module decoder(
     input [31:0] Instr,
-    output [3:0] InstrType //2 means imm, 1 means r, 3 means bxx, 4 means load
+    output [3:0] InstrType //2 means imm, 1 means r, 3 means bxx, 4 means load, 5 means jr, 6means jal, 7 means store
     );
 	always @(*) begin
-		case (Instr[31:26])
+		case (Instr[`op])
 			`lui: InstrType = 2;
 			`ori: InstrType = 2;
-			`special: InstrType = 1;
+			`special: case(Instr[`funct])
+				`jr:InstrType = 5;
+				default: InstrType = 1;
+				endcase
+			`jal: InstrType = 6;
 			`beq: InstrType = 3;
 			`lw: InstrType = 4;
+			`sw: InstrType = 7;
 			default: InstrType = 0;
 		endcase
 	end

@@ -108,8 +108,8 @@ module registersW(
     input Clk,
     input [31:0] Instr,
     output reg [31:0] InstrW,
-//  input [31:0] pca4,
-//  output reg [31:0] pca4W,
+    input [31:0] pca4,
+    output reg [31:0] pca4W,
     input [31:0] ALUout,
 	 output reg [31:0] ALUoutW,
 	 input [31:0] dr,
@@ -119,13 +119,13 @@ module registersW(
 	always @(posedge Clk) begin
 		if (Clr) begin
 			InstrW <= 0;
-		//	pca4W <= pca4;
+			pca4W <= pca4;
 			ALUoutW <= 0;
 			drW <= 0;
 		end
 		else begin
 			InstrW <= Instr;
-		//	pca4W <= pca4;
+			pca4W <= pca4;
 			ALUoutW <= ALUout;
 			drW <= dr;
 		end

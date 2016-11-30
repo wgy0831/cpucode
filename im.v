@@ -19,29 +19,18 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module ifu(
-    input [31:0] Imm16,
-	 input [31:0] Rdata,
-    input [31:0] Ldata,
-    input Clk,
+    input [31:0] PCinput,
+	 input Clk,
     input Clr,
 	 input stall,
-	 input [1:0] PCControl,
 	 output reg [31:0] PC,
-	 output [31:0] PC2Reg
+	 output [31:0] ADD4
     );
-	wire [31:0] PCa4;
-	assign PCa4 = PC + 4;
-	assign PC2Reg = PC + 4;
+	assign ADD4 = PC + 4;
 	always @(posedge Clk)
 	if (!stall)
 	if (Clr) PC <= 32'h00003000;
-	else
-		case (PCControl)
-		2'b00 : PC <= PCa4;
-		2'b01 : PC <= (Imm16 << 2) + PCa4;
-		2'b10 : PC <= Rdata;
-		2'b11 : PC <= Ldata;
-		endcase
+	else PC <= PCinput;
 endmodule
 
 
