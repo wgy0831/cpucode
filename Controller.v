@@ -35,10 +35,17 @@ module ControllerD(
     input [5:0] Op,
     input [5:0] Funct,
 	 input b,
-    output reg [1:0] PCControl
+    output reg [1:0] PCControl,
+	 output reg EXTCon,
+	 output npcsel
     );
+	 assign npcsel = Op == `j || Op == `jal;
 	 always @(*) begin
 		 case(Op)
+		   `ori: EXTCon = 0;
+			`lw: EXTCon = 1;
+			`sw: EXTCon = 1;
+			`sltiu: EXTCon = 1;
 			`beq: PCControl = b? 1 : 0;
 			`jal: PCControl = 3;
 			`j  : PCControl = 3;
@@ -54,11 +61,17 @@ module ControllerE(
     input [5:0] Op,
     input [5:0] Funct,
     output reg ALUAsrc,
-    output reg [1:0] ALUBsrc,
+    output reg ALUBsrc,
     output reg [2:0] ALUControl
     );
 	always @(*) begin
 		case (Op)
+		`lui:
+		begin
+			ALUAsrc = 0;
+			ALUBsrc = 1;
+			ALUControl = 7;
+		end
 		`sltiu: 
 			begin
 				ALUAsrc = 0;
@@ -68,7 +81,7 @@ module ControllerE(
 		`ori: 
 			begin
 				ALUAsrc = 0;
-				ALUBsrc = 2;
+				ALUBsrc = 1;
 				ALUControl = 1;
 			end
 		`lw: 
@@ -117,12 +130,12 @@ module ControllerW(
     );
 	 always @(*) begin
 		 case(Op)
-			`sltiu:
+		/*	`sltiu:
 			begin
 				MemtoReg = 0;
 				RegWrite = 1;
 				RegDst = 0;
-			end
+			end */
 			`ori: 
 			begin
 				MemtoReg = 0;
@@ -131,7 +144,7 @@ module ControllerW(
 			end
 			`lw: 
 			begin
-				MemtoReg = 1;
+				MemtoReg = 2;
 				RegWrite = 1;
 				RegDst = 0;
 			end
@@ -139,13 +152,13 @@ module ControllerW(
 			`beq: RegWrite = 0;
 			`lui: 
 			begin
-				MemtoReg = 2;
+				MemtoReg = 0;
 				RegDst = 0;
 				RegWrite = 1;
 			end
 			`jal: 
 			begin
-				MemtoReg = 3;
+				MemtoReg = 1;
 				RegDst = 2;
 				RegWrite = 1;
 			end

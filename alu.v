@@ -30,9 +30,10 @@ module alu(
 		1 : Result = SrcA | SrcB;
 		2 : Result = SrcA + SrcB;
 		3 : Result = SrcA - SrcB;
-		4 : Result = SrcB << SrcA;
-		5 : Result = SrcB >> SrcA;
+		4 : Result = SrcB << SrcA[5:0];
+		5 : Result = SrcB >> SrcA[5:0];
 		6 : Result = SrcA < SrcB;
+		7 : Result = SrcB << 16;
 		default : Result = 0;
 		endcase
 	end

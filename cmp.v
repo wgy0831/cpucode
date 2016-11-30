@@ -18,15 +18,15 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-`define beq 3'b000
+`define beq 6'b000100
 module cmp(
-    input [3:0] btype,
+    input [5:0] op,
     input [31:0] RData1,
     input [31:0] RData2,
     output reg cmpout
     );
 	always @(*)
-	case (btype)
+	case (op)
 		`beq: cmpout = RData1 == RData2;
 		default cmpout = 0;
 	endcase

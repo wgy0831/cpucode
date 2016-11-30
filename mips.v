@@ -70,38 +70,53 @@ module mips(
     input clk,
     input reset
     );
-	 wire [31:0] PCinput, Instr, pc, pca4, simm16, luidata, zimm16, jdata, pc2reg, ALUResult, SrcA, SrcB, RegAddr, WData, RData1, RData2, MemAddr, Memdata, Memout;
-	 wire zero, MemWrite, ALUAsrc, RegWrite, jsel;
-	 wire [1:0] MemtoReg, ALUBsrc, RegDst, PCControl;
-	 wire [2:0] ALUControl;
+	 wire stall, cmpout, RegWrite, extcon, npcsel, ALUAsrc, ALUBsrc, MemWrite;
+	 wire [31:0] InstrD, InstrE, InstrM, InstrW, RData1, PC4A_E, AOM, PC4_M, Drs;
+	 wire [31:0] RData2, Drt, rsE, PC4_W, WData, Ers, Ert, rtE,rtM, Mrt, pc, Instr;
+	 wire [31:0] PCinput, ADD4, NPCout, PC4_D, RegAddr, extout, PC4_E,extE, SrcA, SrcB;
+	 wire [31:0] ALUResult, Memout, AOW, DRW;
+	 wire [1:0] ForRSD, ForRTD, ForRTM, PCCon, RegDst, RegDa;
+	 wire [2:0] ALUControl, ForRSE, ForRTE;
 	// assign pca4 = pc + 4;
 	// assign luidata = zimm16 << 16;
 	// assign MemAddr = ALUResult;
 	// assign Memdata = RData2;
-	 
-	 
+	 hazardunit mhazardunit(InstrD, InstrE, InstrM, InstrW, stall, ForRSD, ForRTD, ForRSE, ForRTE, ForRTM);
+	 mux4 MFRSD(ForRSD, RData1, PC4_E, AOM, PC4_M, Drs);
+	 mux4 MFRTD(ForRTD, RData2, PC4_E, AOM, PC4_M, Drt);
+	 mux8 MFRSE(ForRSE, rsE, AOM, PC4_M, PC4_W, WData, 32'bx, 32'bx, 32'bx, Ers);
+	 mux8 MFRTE(ForRTE, rtE, AOM, PC4_M, PC4_W, WData, 32'bx, 32'bx, 32'bx, Ert);
+	 mux4 MFRTM(ForRTM, rtM, PC4_W, WData, 32'bx, Mrt);
 	 im mim(pc[11:2], Instr);
 	 ifu mifu(PCinput, clk, reset, stall, pc, ADD4);
-	 mux4 MUX_PC(PCCon, ADD4, NPC, RData1, 32'bx, PCinput);
+	 mux4 MUX_PC(PCCon, ADD4, NPCout, Drs, 32'bx, PCinput);
 	 
 	 registersD mregistersD(Instr, InstrD, ADD4, PC4_D, clk, stall, reset);
 	 
+	 ControllerD mControllerD(InstrD[31:26], InstrD[5:0], cmpout, PCCon, extcon, npcsel);
 	 grf mgrf(clk, reset, InstrD[25:21], InstrD[20:16], RegAddr[4:0], RegWrite, WData, RData1, RData2);
-	 ext mext(instr[15:0], extcon, extout);
+	 ext mext(InstrD[15:0], extcon, extout);
 	// Controller controller(instr[31:26],instr[5:0],zero,MemtoReg,MemWrite,ALUAsrc,ALUBsrc,RegDst,RegWrite,PCControl,ALUControl);
-    cmp mcmp(btype, RData1, RData2, cmpout);
+    cmp mcmp(InstrD[31:26], Drs, Drt, cmpout);
 	 npc mnpc(npcsel, PC4_D, InstrD[25:0], InstrD[15:0], NPCout);
 	 
-	 registersE mregistersE(clk, stall, InstrD, InstrE, PC4_D, PC4_E, RData1, rsE, RData2, rtE, extout, extE, reset);
+	 registersE mregistersE(clk, stall, InstrD, InstrE, PC4_D + 4, PC4_E, Drs, rsE, Drt, rtE, extout, extE, reset);
 	 
+	 ControllerE mControllerE(InstrE[31:26], InstrE[5:0], ALUAsrc, ALUBsrc, ALUControl);
+	 mux2 ALUAsel(ALUAsrc, Ers, {27'b0,InstrE[10:6]}, SrcA);
+	 mux2 ALUBsel(ALUBsrc, Ert, extE, SrcB);
 	 alu malu(SrcA, SrcB, ALUResult, ALUControl);
 	 
-	 registersM mregistersM(clk, InstrE, InstrM, PC4_E, PC4_M, ALUResult, AOM, rtE, rtM, reset);
+	 registersM mregistersM(clk, InstrE, InstrM, PC4_E, PC4_M, ALUResult, AOM, Ert, rtM, reset);
 	 
-	 dm mdm(AOM, rtM, MemWrite, clk, reset, Memout);
+	 ControllerM mControllerM(InstrM[31:26], MemWrite);
+	 dm mdm(AOM, Mrt, MemWrite, clk, reset, Memout);
 	 
-	 registersW mregistersW(clk, InstrE, InstrW, PC4_M, PC4_W, AOM, AOW, Memout, DRW, reset);
+	 registersW mregistersW(clk, InstrM, InstrW, PC4_M, PC4_W, AOM, AOW, Memout, DRW, reset);
 	 
+	 ControllerW mControllerW(InstrW[31:26], RegWrite, RegDst, RegDa);
+	 mux4 RegDstsel(RegDst, {27'b0,InstrW[20:16]}, {27'b0, InstrW[15:11]}, 32'h1f, 32'bx, RegAddr);
+	 mux4 RegWrsel(RegDa, AOW, PC4_W, DRW, 32'bx, WData);
 	/* 
 	 mux4 toreg(MemtoReg, ALUResult, Memout, luidata, pc2reg, WData);
 	 mux2 aluas(ALUAsrc, RData1, {27'b0, instr[10:6]}, SrcA);

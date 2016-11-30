@@ -108,10 +108,10 @@ module hazardunit(
 	assign stall_store_D = store_D && load_E && equaliErt;
 	assign stall = stall_b || stall_cal_r_D || stall_cal_i_D || stall_load_D || stall_jr_D || stall_store_D;
 	assign ForwardRSD = 
-			(btypeD || jr_D) && jal_E && (InstrD[`rs] == 31) ? 1 :
-			(btypeD || jr_D) && cal_r_M && (InstrD[`rs] == InstrM[`rd]) ? 2 :
-			(btypeD || jr_D) && cal_i_M && (InstrD[`rs] == InstrM[`rt]) ? 2 :
-			(btypeD || jr_D) && jal_M && (InstrD[`rs] == 31) ? 3 :
+			(btype_D || jr_D) && jal_E && (InstrD[`rs] == 31) ? 1 :
+			(btype_D || jr_D) && cal_r_M && (InstrD[`rs] == InstrM[`rd]) ? 2 :
+			(btype_D || jr_D) && cal_i_M && (InstrD[`rs] == InstrM[`rt]) ? 2 :
+			(btype_D || jr_D) && jal_M && (InstrD[`rs] == 31) ? 3 :
 																					0;
 	assign ForwardRTD = 
 			btype_D && jal_E && (InstrD[`rt] == 31) ? 1 :

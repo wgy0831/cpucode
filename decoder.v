@@ -35,7 +35,7 @@
 `define funct 5:0
 module decoder(
     input [31:0] Instr,
-    output [3:0] InstrType //2 means imm, 1 means r, 3 means bxx, 4 means load, 5 means jr, 6means jal, 7 means store
+    output reg [3:0] InstrType //2 means imm, 1 means r, 3 means bxx, 4 means load, 5 means jr, 6means jal, 7 means store
     );
 	always @(*) begin
 		case (Instr[`op])
