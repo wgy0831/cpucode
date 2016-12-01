@@ -43,10 +43,22 @@ module ControllerD(
 	 assign npcsel = Op == `j || Op == `jal;
 	 always @(*) begin
 		 case(Op)
-		   `ori: EXTCon = 0;
-			`lw: EXTCon = 1;
-			`sw: EXTCon = 1;
-			`sltiu: EXTCon = 1;
+		   `ori: begin 
+				EXTCon = 0;
+				PCControl = 0;
+			end
+			`lw: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`sw: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`sltiu: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
 			`beq: PCControl = b? 1 : 0;
 			`jal: PCControl = 1;
 			`j  : PCControl = 1;

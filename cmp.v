@@ -28,6 +28,6 @@ module cmp(
 	always @(*)
 	case (op)
 		`beq: cmpout = RData1 == RData2;
-		default cmpout = 0;
+		default: cmpout = 0;
 	endcase
 endmodule

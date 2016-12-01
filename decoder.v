@@ -41,6 +41,7 @@ module decoder(
 		case (Instr[`op])
 			`lui: InstrType = 2;
 			`ori: InstrType = 2;
+			`sltiu: InstrType = 2;
 			`special: case(Instr[`funct])
 				`jr:InstrType = 5;
 				default: InstrType = 1;

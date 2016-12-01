@@ -70,23 +70,23 @@ module mips(
     input clk,
     input reset
     );
-	 wire stall, cmpout, RegWrite, extcon, npcsel, ALUAsrc, ALUBsrc, MemWrite;
+	 wire stall, ForRTM, cmpout, RegWrite, extcon, npcsel, ALUAsrc, ALUBsrc, MemWrite;
 	 wire [31:0] InstrD, InstrE, InstrM, InstrW, RData1, PC4A_E, AOM, PC4_M, Drs;
 	 wire [31:0] RData2, Drt, rsE, PC4_W, WData, Ers, Ert, rtE,rtM, Mrt, pc, Instr;
 	 wire [31:0] PCinput, ADD4, NPCout, PC4_D, RegAddr, extout, PC4_E,extE, SrcA, SrcB;
 	 wire [31:0] ALUResult, Memout, AOW, DRW;
-	 wire [1:0] ForRSD, ForRTD, ForRTM, PCCon, RegDst, RegDa;
-	 wire [2:0] ALUControl, ForRSE, ForRTE;
+	 wire [1:0] ForRSD, ForRTD, PCCon, RegDst, RegDa, ForRSE, ForRTE;
+	 wire [2:0] ALUControl;
 	// assign pca4 = pc + 4;
 	// assign luidata = zimm16 << 16;
 	// assign MemAddr = ALUResult;
 	// assign Memdata = RData2;
 	 hazardunit mhazardunit(InstrD, InstrE, InstrM, InstrW, stall, ForRSD, ForRTD, ForRSE, ForRTE, ForRTM);
-	 mux4 MFRSD(ForRSD, RData1, PC4_E, AOM, PC4_M, Drs);
-	 mux4 MFRTD(ForRTD, RData2, PC4_E, AOM, PC4_M, Drt);
-	 mux8 MFRSE(ForRSE, rsE, AOM, PC4_M, PC4_W, WData, 32'bx, 32'bx, 32'bx, Ers);
-	 mux8 MFRTE(ForRTE, rtE, AOM, PC4_M, PC4_W, WData, 32'bx, 32'bx, 32'bx, Ert);
-	 mux4 MFRTM(ForRTM, rtM, PC4_W, WData, 32'bx, Mrt);
+	 mux4 MFRSD(ForRSD, RData1, PC4_E, PC4_M, AOM, Drs);
+	 mux4 MFRTD(ForRTD, RData2, PC4_E, PC4_M, AOM, Drt);
+	 mux4 MFRSE(ForRSE, rsE, PC4_M, AOM, WData, Ers);
+	 mux4 MFRTE(ForRTE, rtE, PC4_M, AOM, WData, Ert);
+	 mux2 MFRTM(ForRTM, rtM, WData, Mrt);
 	 im mim(pc[11:2], Instr);
 	 ifu mifu(PCinput, clk, reset, stall, pc, ADD4);
 	 mux4 MUX_PC(PCCon, ADD4, NPCout, Drs, 32'bx, PCinput);

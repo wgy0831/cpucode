@@ -55,26 +55,18 @@ module registersE(
 	 input Clr
     );
 	always @(posedge Clk) begin
-		if (Clr) begin
+		if (Clr || stall) begin
 			InstrE <= 0;
 			pca4E <= 0;
 			rsE <= 0;
 			rtE <= 0;
 			extE <= 0;
-		end else
-		if (!stall) begin
+		end else begin
 			InstrE <= Instr;
 			pca4E <= pca4;
 			rsE <= rs;
 			rtE <= rt;
 			extE <= ext;
-		end
-		else begin
-			InstrE <= 0;
-			pca4E <= 0;
-			rsE <= 0;
-			rtE <= 0;
-			extE <= 0;
 		end
 	end
 endmodule

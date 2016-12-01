@@ -32,9 +32,9 @@ module hazardunit(
 	output stall,
 	output [1:0] ForwardRSD,
 	output [1:0] ForwardRTD,
-	output [2:0] ForwardRSE,
-	output [2:0] ForwardRTE,
-	output [1:0] ForwardRTM
+	output [1:0] ForwardRSE,
+	output [1:0] ForwardRTE,
+	output ForwardRTM
     );
 	wire cal_r_D, cal_i_D, btype_D, load_D, jr_D, jal_D, store_D;
 	wire cal_r_E, cal_i_E, btype_E, load_E, jr_E, jal_E, store_E;
@@ -109,38 +109,38 @@ module hazardunit(
 	assign stall = stall_b || stall_cal_r_D || stall_cal_i_D || stall_load_D || stall_jr_D || stall_store_D;
 	assign ForwardRSD = 
 			(btype_D || jr_D) && jal_E && (InstrD[`rs] == 31) ? 1 :
-			(btype_D || jr_D) && cal_r_M && (InstrD[`rs] == InstrM[`rd]) ? 2 :
-			(btype_D || jr_D) && cal_i_M && (InstrD[`rs] == InstrM[`rt]) ? 2 :
-			(btype_D || jr_D) && jal_M && (InstrD[`rs] == 31) ? 3 :
+			(btype_D || jr_D) && jal_M && (InstrD[`rs] == 31) ? 2 :
+			(btype_D || jr_D) && cal_r_M && (InstrD[`rs] == InstrM[`rd]) ? 3 :
+			(btype_D || jr_D) && cal_i_M && (InstrD[`rs] == InstrM[`rt]) ? 3 :
 																					0;
 	assign ForwardRTD = 
 			btype_D && jal_E && (InstrD[`rt] == 31) ? 1 :
-			btype_D && cal_r_M && (InstrD[`rt] == InstrM[`rd]) ? 2 :
-			btype_D && cal_i_M && (InstrD[`rt] == InstrM[`rt]) ? 2 :
-			btype_D && jal_M && (InstrD[`rt] == 31) ? 3 :
+			btype_D && jal_M && (InstrD[`rt] == 31) ? 2 :
+			btype_D && cal_r_M && (InstrD[`rt] == InstrM[`rd]) ? 3 :
+			btype_D && cal_i_M && (InstrD[`rt] == InstrM[`rt]) ? 3 :
 																		0;
 	
 	assign ForwardRSE =
-			(cal_r_E || cal_i_E || load_E || store_E) && cal_r_M && (InstrE[`rs] == InstrM[`rd]) ? 1 :
-			(cal_r_E || cal_i_E || load_E || store_E) && cal_i_M && (InstrE[`rs] == InstrM[`rt]) ? 1 :
-			(cal_r_E || cal_i_E || load_E || store_E) && jal_M && (InstrE[`rs] == 31) ? 2 :
+			(cal_r_E || cal_i_E || load_E || store_E) && jal_M && (InstrE[`rs] == 31) ? 1 :
+			(cal_r_E || cal_i_E || load_E || store_E) && cal_r_M && (InstrE[`rs] == InstrM[`rd]) ? 2 :
+			(cal_r_E || cal_i_E || load_E || store_E) && cal_i_M && (InstrE[`rs] == InstrM[`rt]) ? 2 :	
 			(cal_r_E || cal_i_E || load_E || store_E) && jal_W && (InstrE[`rs] == 31) ? 3 :
-			(cal_r_E || cal_i_E || load_E || store_E) && cal_r_W && (InstrE[`rs] == InstrW[`rd]) ? 4 :
-			(cal_r_E || cal_i_E || load_E || store_E) && cal_i_W && (InstrE[`rs] == InstrW[`rt]) ? 4 :
+			(cal_r_E || cal_i_E || load_E || store_E) && cal_r_W && (InstrE[`rs] == InstrW[`rd]) ? 3 :
+			(cal_r_E || cal_i_E || load_E || store_E) && cal_i_W && (InstrE[`rs] == InstrW[`rt]) ? 3 :
+			(cal_r_E || cal_i_E || load_E || store_E) && load_W && (InstrE[`rs] == InstrW[`rt]) ? 3 :
 																																	0;
 	
 	assign ForwardRTE =
-			(cal_r_E || store_E) && cal_r_M && (InstrE[`rt] == InstrM[`rd]) ? 1 :
-			(cal_r_E || store_E) && cal_i_M && (InstrE[`rt] == InstrM[`rt]) ? 1 :
-			(cal_r_E || store_E) && jal_M && (InstrE[`rt] == 31) ? 2 :
+			(cal_r_E || store_E) && jal_M && (InstrE[`rt] == 31) ? 1 :
+			(cal_r_E || store_E) && cal_r_M && (InstrE[`rt] == InstrM[`rd]) ? 2 :
+			(cal_r_E || store_E) && cal_i_M && (InstrE[`rt] == InstrM[`rt]) ? 2 :
 			(cal_r_E || store_E) && jal_W && (InstrE[`rt] == 31) ? 3 :
-			(cal_r_E || store_E) && cal_r_W && (InstrE[`rt] == InstrW[`rd]) ? 4 :
-			(cal_r_E || store_E) && cal_i_W && (InstrE[`rt] == InstrW[`rt]) ? 4 :
+			(cal_r_E || store_E) && cal_r_W && (InstrE[`rt] == InstrW[`rd]) ? 3 :
+			(cal_r_E || store_E) && cal_i_W && (InstrE[`rt] == InstrW[`rt]) ? 3 :
+			(cal_r_E || store_E) && load_W && (InstrE[`rt] == InstrW[`rt]) ? 3 :
 																										0;
 	
 	assign ForwardRTM = 
-			store_M && jal_W && (InstrM[`rt] == 31) ? 1 :
-			store_M && cal_r_W && (InstrM[`rt] == InstrW[`rd]) ? 2 :
-			store_M && cal_i_W && (InstrM[`rt] == InstrW[`rt]) ? 2 :
-																						0;
+			store_M && load_W && (InstrM[`rt] == InstrW[`rt]) ? 1 :
+																					0;
 endmodule
