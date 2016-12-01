@@ -40,7 +40,7 @@ module test;
 		reset = 1;
 
 		// Wait 100 ns for global reset to finish
-		#3 reset = 0;
+		#0.3 reset = 0;
         
 		// Add stimulus here
 

@@ -31,6 +31,7 @@
 `define sll     6'b000000
 `define jr      6'b001000
 `define lui     6'b001111
+`define jalr    6'b001001
 module ControllerD(
     input [5:0] Op,
     input [5:0] Funct,
@@ -47,10 +48,10 @@ module ControllerD(
 			`sw: EXTCon = 1;
 			`sltiu: EXTCon = 1;
 			`beq: PCControl = b? 1 : 0;
-			`jal: PCControl = 3;
-			`j  : PCControl = 3;
+			`jal: PCControl = 1;
+			`j  : PCControl = 1;
 			`special : 
-				if (Funct == 6'b001001 || Funct == 6'b001000) PCControl = 2;
+				if (Funct == `jalr || Funct == `jr) PCControl = 2;
 				else PCControl = 0;
 			default: PCControl = 0;
 		endcase
@@ -130,12 +131,12 @@ module ControllerW(
     );
 	 always @(*) begin
 		 case(Op)
-		/*	`sltiu:
+			`sltiu:
 			begin
 				MemtoReg = 0;
 				RegWrite = 1;
 				RegDst = 0;
-			end */
+			end
 			`ori: 
 			begin
 				MemtoReg = 0;

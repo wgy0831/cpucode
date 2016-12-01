@@ -28,9 +28,8 @@ module ifu(
     );
 	assign ADD4 = PC + 4;
 	always @(posedge Clk)
-	if (!stall)
 	if (Clr) PC <= 32'h00003000;
-	else PC <= PCinput;
+	else if (!stall) PC <= PCinput;
 endmodule
 
 
