@@ -19,6 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 `define beq 6'b000100
+`define bne 6'b000101
 module cmp(
     input [5:0] op,
     input [31:0] RData1,
@@ -27,6 +28,7 @@ module cmp(
     );
 	always @(*)
 	case (op)
+		`bne: cmpout = RData1 != RData2;
 		`beq: cmpout = RData1 == RData2;
 		default: cmpout = 0;
 	endcase

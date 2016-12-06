@@ -22,7 +22,6 @@
 `define jal     6'b000011
 `define j       6'b000010
 `define special 6'b000000
-`define sltiu   6'b001011
 `define ori     6'b001101
 `define lw      6'b100011
 `define sw      6'b101011
@@ -31,26 +30,124 @@
 `define sll     6'b000000
 `define jr      6'b001000
 `define lui     6'b001111
+`define add     6'b100000
+`define addi    6'b001000
+`define addiu   6'b001001
+`define sub     6'b100010
+`define bne     6'b000101
+`define srl     6'b000010
+`define and     6'b100100
+`define or      6'b100101
+`define xor     6'b100110
+`define jalr    6'b001001
 `define op 31:26
 `define funct 5:0
-module decoder(
+
+module decoderTuse(
     input [31:0] Instr,
-    output reg [3:0] InstrType //2 means imm, 1 means r, 3 means bxx, 4 means load, 5 means jr, 6means jal, 7 means store
-    );
-	always @(*) begin
+    output reg krt,
+	 output reg [1:0] Tuse1,
+	 output reg [1:0] Tuse2
+	 );
+	 always @(*) begin
 		case (Instr[`op])
-			`lui: InstrType = 2;
-			`ori: InstrType = 2;
-			`sltiu: InstrType = 2;
-			`special: case(Instr[`funct])
-				`jr:InstrType = 5;
-				default: InstrType = 1;
-				endcase
-			`jal: InstrType = 6;
-			`beq: InstrType = 3;
-			`lw: InstrType = 4;
-			`sw: InstrType = 7;
-			default: InstrType = 0;
+			`addi: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`addiu: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`lui: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`ori: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`special:
+				if(Instr[`funct] == `jr) begin
+					krt = 0;
+					Tuse1 = 2'b00;
+					Tuse2 = 2'b00;
+				end else begin
+					krt = 1;
+					Tuse1 = 2'b01;
+					Tuse2 = 2'b01;
+				end
+			`beq: begin
+				krt = 1;
+				Tuse1 = 2'b00;
+				Tuse2 = 2'b00;
+			end
+			`lw: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`sw: begin
+				krt = 1;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b10;
+			end
+			default: begin
+				krt = 0;
+				Tuse1 = 2'b11;
+				Tuse2 = 2'b00;
+			end
+		endcase
+	end
+endmodule
+module decoderTnew(
+    input [31:0] Instr,
+    output reg [1:0] dreg,
+	 output reg [1:0] Tnew 
+	 );
+	  always @(*) begin
+		case (Instr[`op])
+			`addi: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
+			`addiu: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
+			`lui: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
+			`ori: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
+			`jal: begin
+				dreg = 2'b11;
+				Tnew = 2'b01;
+			end
+			`special:
+				if (Instr[`funct] == `jalr) begin
+					dreg = 2'b11;
+					Tnew = 2'b01;
+				end else
+				begin
+					dreg = 2'b01;
+					Tnew = 2'b10;
+				end
+			`lw: begin
+				dreg = 0;
+				Tnew = 2'b11;
+			end
+			default: begin
+				dreg = 2'b11;
+				Tnew = 2'b00;
+			end
 		endcase
 	end
 endmodule

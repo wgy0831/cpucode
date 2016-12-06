@@ -32,7 +32,7 @@ module alu(
 		3 : Result = SrcA - SrcB;
 		4 : Result = SrcB << SrcA[5:0];
 		5 : Result = SrcB >> SrcA[5:0];
-		6 : Result = SrcA < SrcB;
+		6 : Result = SrcA ^ SrcB;
 		7 : Result = SrcB << 16;
 		default : Result = 0;
 		endcase

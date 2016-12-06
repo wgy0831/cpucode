@@ -52,6 +52,8 @@ module registersE(
 	 output reg [31:0] rtE,
 	 input [31:0] ext,
 	 output reg [31:0] extE,
+	 input regWrite,
+	 output reg regWriteE,
 	 input Clr
     );
 	always @(posedge Clk) begin
@@ -61,12 +63,14 @@ module registersE(
 			rsE <= 0;
 			rtE <= 0;
 			extE <= 0;
+			regWriteE <= 0;
 		end else begin
 			InstrE <= Instr;
 			pca4E <= pca4;
 			rsE <= rs;
 			rtE <= rt;
 			extE <= ext;
+			regWriteE <= regWrite;
 		end
 	end
 endmodule
@@ -80,6 +84,8 @@ module registersM(
 	 output reg [31:0] ALUoutE,
 	 input [31:0] rt,
 	 output reg [31:0] rtE,
+	 input regWrite,
+	 output reg regWriteM,
 	 input Clr
     );
 	always @(posedge Clk) begin
@@ -88,12 +94,14 @@ module registersM(
 			pca4M <= 0;
 			ALUoutE <= 0;
 			rtE <= 0;
+			regWriteM <= 0;
 		end
 		else begin
 			InstrM <= Instr;
 			pca4M <= pca4;
 			ALUoutE <= ALUout;
 			rtE <= rt;
+			regWriteM <= regWrite;
 		end
 	end
 endmodule
@@ -107,6 +115,8 @@ module registersW(
 	 output reg [31:0] ALUoutW,
 	 input [31:0] dr,
 	 output reg [31:0] drW,
+	 input regWrite,
+	 output reg regWriteW,
 	 input Clr
     );
 	always @(posedge Clk) begin
@@ -115,12 +125,14 @@ module registersW(
 			pca4W <= pca4;
 			ALUoutW <= 0;
 			drW <= 0;
+			regWriteW <= 0;
 		end
 		else begin
 			InstrW <= Instr;
 			pca4W <= pca4;
 			ALUoutW <= ALUout;
 			drW <= dr;
+			regWriteW <= regWrite;
 		end
 	end
 endmodule

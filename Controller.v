@@ -22,7 +22,6 @@
 `define jal     6'b000011
 `define j       6'b000010
 `define special 6'b000000
-`define sltiu   6'b001011
 `define ori     6'b001101
 `define lw      6'b100011
 `define sw      6'b101011
@@ -31,18 +30,42 @@
 `define sll     6'b000000
 `define jr      6'b001000
 `define lui     6'b001111
+`define add     6'b100000
+`define addi    6'b001000
+`define addiu   6'b001001
+`define sub     6'b100010
+`define bne     6'b000101
+`define srl     6'b000010
+`define and     6'b100100
+`define or      6'b100101
+`define xor     6'b100110
 `define jalr    6'b001001
+`define op 31:26
+`define funct 5:0
 module ControllerD(
-    input [5:0] Op,
-    input [5:0] Funct,
+    input [31:0] Instr,
 	 input b,
     output reg [1:0] PCControl,
 	 output reg EXTCon,
-	 output npcsel
+	 output npcsel,
+	 output RegWrite
     );
+	 wire [5:0] Op, Funct;
+	 assign Op = Instr[`op];
+	 assign Funct = Instr[`funct];
 	 assign npcsel = Op == `j || Op == `jal;
+	 assign RegWrite = Op == `ori || Op == `lw || Op == `jal ||
+							 Op == `special && Funct == `jalr;
 	 always @(*) begin
 		 case(Op)
+			`addi: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`addiu: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
 		   `ori: begin 
 				EXTCon = 0;
 				PCControl = 0;
@@ -55,10 +78,7 @@ module ControllerD(
 				EXTCon = 1;
 				PCControl = 0;
 			end
-			`sltiu: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
+			`bne: PCControl = b? 1 : 0;
 			`beq: PCControl = b? 1 : 0;
 			`jal: PCControl = 1;
 			`j  : PCControl = 1;
@@ -71,26 +91,34 @@ module ControllerD(
 
 endmodule
 module ControllerE(
-    input [5:0] Op,
-    input [5:0] Funct,
+    input [31:0] Instr,
     output reg ALUAsrc,
     output reg ALUBsrc,
     output reg [2:0] ALUControl
     );
+	 wire [5:0] Op, Funct;
+	 assign Op = Instr[`op];
+	 assign Funct = Instr[`funct];
 	always @(*) begin
 		case (Op)
+		`addi:
+		begin
+			ALUAsrc = 0;
+			ALUBsrc = 1;
+			ALUControl = 2;
+		end
+		`addiu:
+		begin
+			ALUAsrc = 0;
+			ALUBsrc = 1;
+			ALUControl = 2;
+		end
 		`lui:
 		begin
 			ALUAsrc = 0;
 			ALUBsrc = 1;
 			ALUControl = 7;
 		end
-		`sltiu: 
-			begin
-				ALUAsrc = 0;
-				ALUBsrc = 1;
-				ALUControl = 6;
-			end
 		`ori: 
 			begin
 				ALUAsrc = 0;
@@ -114,6 +142,16 @@ module ControllerE(
 				ALUAsrc = 0;
 				ALUBsrc = 0;
 				case (Funct)
+					`sub: ALUControl = 3;
+					`srl: 
+					begin
+						ALUControl = 5;
+						ALUAsrc = 1;
+					end
+					`and: ALUControl = 0;
+					`or: ALUControl = 1;
+					`xor: ALUControl = 6;
+					`add: ALUControl = 2;
 					`addu: ALUControl = 2; 
 					`subu: ALUControl = 3;
 					`sll: 
@@ -136,52 +174,58 @@ module ControllerM(
 
 endmodule
 module ControllerW(
-    input [5:0] Op,
-    output reg RegWrite,
+    input [31:0] Instr,
 	 output reg [1:0] RegDst,
     output reg [1:0] MemtoReg
     );
+	 wire [5:0] Op, Funct;
+	 assign Op = Instr[`op];
+	 assign Funct = Instr[`funct];
 	 always @(*) begin
 		 case(Op)
-			`sltiu:
+			`addi:
 			begin
 				MemtoReg = 0;
-				RegWrite = 1;
+				RegDst = 0;
+			end
+			`addiu:
+			begin
+				MemtoReg = 0;
 				RegDst = 0;
 			end
 			`ori: 
 			begin
 				MemtoReg = 0;
-				RegWrite = 1;
 				RegDst = 0;
 			end
 			`lw: 
 			begin
 				MemtoReg = 2;
-				RegWrite = 1;
 				RegDst = 0;
-			end
-			`sw: RegWrite = 0; 
-			`beq: RegWrite = 0;
+			end 
 			`lui: 
 			begin
 				MemtoReg = 0;
 				RegDst = 0;
-				RegWrite = 1;
 			end
 			`jal: 
 			begin
 				MemtoReg = 1;
 				RegDst = 2;
-				RegWrite = 1;
 			end
 			`special: 
-			begin
+				if (Funct == `jalr)
+				begin
+					MemtoReg = 1;
+					RegDst = 2;
+				end else begin
+					MemtoReg = 0;
+					RegDst = 1;
+				end
+			default: begin
 				MemtoReg = 0;
-				RegDst = 1;
-				RegWrite = 1;
+				RegDst = 0;
 			end
-			default: RegWrite = 0;
 		endcase
 	end
 endmodule
