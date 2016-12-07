@@ -86,6 +86,11 @@ module decoderTuse(
 				Tuse1 = 2'b00;
 				Tuse2 = 2'b00;
 			end
+			`bne: begin
+				krt = 1;
+				Tuse1 = 2'b00;
+				Tuse2 = 2'b00;
+			end
 			`lw: begin
 				krt = 0;
 				Tuse1 = 2'b01;
@@ -128,12 +133,12 @@ module decoderTnew(
 				Tnew = 2'b10;
 			end
 			`jal: begin
-				dreg = 2'b11;
+				dreg = 2'b10;
 				Tnew = 2'b01;
 			end
 			`special:
 				if (Instr[`funct] == `jalr) begin
-					dreg = 2'b11;
+					dreg = 2'b10;
 					Tnew = 2'b01;
 				end else
 				begin

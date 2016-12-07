@@ -54,8 +54,9 @@ module ControllerD(
 	 assign Op = Instr[`op];
 	 assign Funct = Instr[`funct];
 	 assign npcsel = Op == `j || Op == `jal;
-	 assign RegWrite = Op == `ori || Op == `lw || Op == `jal ||
-							 Op == `special && Funct == `jalr;
+	 assign RegWrite = Op == `ori || Op == `lw || Op == `jal || 
+						Op == `lui || Op == `addi || Op == `addiu || 
+						(Op == `special && Funct != `jr);
 	 always @(*) begin
 		 case(Op)
 			`addi: begin

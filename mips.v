@@ -34,13 +34,13 @@ module mips(
     input reset
     );
 	 wire stall, ForRTM, cmpout, extcon, npcsel, ALUAsrc, ALUBsrc, MemWrite;
-	 wire [31:0] InstrD, InstrE, InstrM, InstrW, RData1, PC4A_E, AOM, PC4_M, Drs;
+	 wire [31:0] InstrD, InstrE, InstrM, InstrW, RData1, AOM, PC4_M, Drs;
 	 wire [31:0] RData2, Drt, rsE, PC4_W, WData, Ers, Ert, rtE,rtM, Mrt, pc, Instr;
 	 wire [31:0] PCinput, ADD4, NPCout, PC4_D, RegAddr, extout, PC4_E,extE, SrcA, SrcB;
 	 wire [31:0] ALUResult, Memout, AOW, DRW;
 	 wire [1:0] ForRSD, ForRTD, PCCon, RegDst, RegDa, ForRSE, ForRTE;
 	 wire [2:0] ALUControl;
-	 wire regWriteD, regWriteE, regWriteM, regWriteW, ncmp;
+	 wire regWriteD, regWriteE, regWriteM, regWriteW;
 	// assign pca4 = pc + 4;
 	// assign luidata = zimm16 << 16;
 	// assign MemAddr = ALUResult;
@@ -58,7 +58,7 @@ module mips(
 	 registersD mregistersD(Instr, InstrD, ADD4, PC4_D, clk, stall, reset);
 	 
 	 ControllerD mControllerD(InstrD, cmpout, PCCon, extcon, npcsel, regWriteD);
-	 grf mgrf(clk, reset, InstrD[25:21], InstrD[20:16], RegAddr[4:0], RegWriteW, WData, RData1, RData2);
+	 grf mgrf(clk, reset, InstrD[25:21], InstrD[20:16], RegAddr[4:0], regWriteW, WData, RData1, RData2);
 	 ext mext(InstrD[15:0], extcon, extout);
 	// Controller controller(instr[31:26],instr[5:0],zero,MemtoReg,MemWrite,ALUAsrc,ALUBsrc,RegDst,RegWrite,PCControl,ALUControl);
     cmp mcmp(InstrD[31:26], Drs, Drt, cmpout);
