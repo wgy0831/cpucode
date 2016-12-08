@@ -22,7 +22,7 @@ module alu(
     input [31:0] SrcA,
     input [31:0] SrcB,
     output reg [31:0] Result,
-    input [2:0] ALUControl
+    input [3:0] ALUControl
     );
 	always @(*) begin
 		case(ALUControl)
@@ -30,10 +30,14 @@ module alu(
 		1 : Result = SrcA | SrcB;
 		2 : Result = SrcA + SrcB;
 		3 : Result = SrcA - SrcB;
-		4 : Result = SrcB << SrcA[5:0];
-		5 : Result = SrcB >> SrcA[5:0];
+		4 : Result = SrcB << SrcA[4:0];
+		5 : Result = SrcB >> SrcA[4:0];
 		6 : Result = SrcA ^ SrcB;
 		7 : Result = SrcB << 16;
+		8 : Result = SrcB >>> SrcA[4:0];
+		9 : Result = ~ (SrcA | SrcB);
+		10: Result = SrcA[31] == SrcB[31] ? SrcA < SrcB : SrcA[31];
+		11: Result = SrcA < SrcB;
 		default : Result = 0;
 		endcase
 	end

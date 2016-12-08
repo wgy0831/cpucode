@@ -39,7 +39,7 @@ module mips(
 	 wire [31:0] PCinput, ADD4, NPCout, PC4_D, RegAddr, extout, PC4_E,extE, SrcA, SrcB;
 	 wire [31:0] ALUResult, Memout, AOW, DRW;
 	 wire [1:0] ForRSD, ForRTD, PCCon, RegDst, RegDa, ForRSE, ForRTE;
-	 wire [2:0] ALUControl;
+	 wire [3:0] ALUControl;
 	 wire regWriteD, regWriteE, regWriteM, regWriteW;
 	// assign pca4 = pc + 4;
 	// assign luidata = zimm16 << 16;
@@ -61,7 +61,7 @@ module mips(
 	 grf mgrf(clk, reset, InstrD[25:21], InstrD[20:16], RegAddr[4:0], regWriteW, WData, RData1, RData2);
 	 ext mext(InstrD[15:0], extcon, extout);
 	// Controller controller(instr[31:26],instr[5:0],zero,MemtoReg,MemWrite,ALUAsrc,ALUBsrc,RegDst,RegWrite,PCControl,ALUControl);
-    cmp mcmp(InstrD[31:26], Drs, Drt, cmpout);
+    cmp mcmp(InstrD, Drs, Drt, cmpout);
 	 npc mnpc(npcsel, PC4_D, InstrD[25:0], InstrD[15:0], NPCout);
 	 
 	 registersE mregistersE(clk, stall, InstrD, InstrE, PC4_D + 4, PC4_E, Drs, rsE, Drt, rtE, extout, extE, regWriteD, regWriteE, reset);

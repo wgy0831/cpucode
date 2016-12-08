@@ -40,6 +40,35 @@
 `define or      6'b100101
 `define xor     6'b100110
 `define jalr    6'b001001
+`define lb      6'b100000
+`define lbu     6'b100100
+`define lh      6'b100001
+`define lhu     6'b100101
+`define sb      6'b101000
+`define sh      6'b101001
+`define mult    6'b011000
+`define multu   6'b011001
+`define div     6'b011010
+`define divu    6'b011011
+`define sra     6'b000011
+`define sllv    6'b000100
+`define srlv    6'b000110
+`define srav    6'b000111
+`define nor     6'b100111
+`define xori    6'b001110
+`define slt     6'b101010
+`define slti    6'b001010
+`define sltiu   6'b001011
+`define sltu    6'b101011
+`define blez    6'b000110
+`define bgtz    6'b000111
+`define regimm  6'b000001
+`define bltz    5'b00000
+`define bgez    5'b00001
+`define mfhi    6'b010000
+`define mflo    6'b010010
+`define mthi    6'b010001
+`define mtlo    6'b010011
 `define op 31:26
 `define funct 5:0
 
@@ -51,6 +80,37 @@ module decoderTuse(
 	 );
 	 always @(*) begin
 		case (Instr[`op])
+			`regimm:  begin
+				krt = 0;
+				Tuse1 = 2'b00;
+				Tuse2 = 2'b00;
+			end
+	//						
+			`bgtz: begin
+				krt = 0;
+				Tuse1 = 2'b00;
+				Tuse2 = 2'b00;
+			end
+			`blez: begin
+				krt = 0;
+				Tuse1 = 2'b00;
+				Tuse2 = 2'b00;
+			end
+			`sltiu: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`slti: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`xori: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
 			`addi: begin
 				krt = 0;
 				Tuse1 = 2'b01;
@@ -72,7 +132,7 @@ module decoderTuse(
 				Tuse2 = 2'b00;
 			end
 			`special:
-				if(Instr[`funct] == `jr) begin
+				if(Instr[`funct] == `jr || Instr[`funct] == `jalr) begin
 					krt = 0;
 					Tuse1 = 2'b00;
 					Tuse2 = 2'b00;
@@ -116,6 +176,18 @@ module decoderTnew(
 	 );
 	  always @(*) begin
 		case (Instr[`op])
+			`sltiu: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
+			`slti: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
+			`xori: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
 			`addi: begin
 				dreg = 0;
 				Tnew = 2'b10;
