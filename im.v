@@ -34,12 +34,14 @@ endmodule
 
 
 module im(
-	input [9:0] Addr,
+	input [10:0] Addr,
 	output [31:0] Data
 	);
-	reg [31:0] rom [1023:0];
+	reg [31:0] rom [2047:0];
 	initial begin
 		$readmemh("code.txt", rom);
 	end;
-	assign Data = rom[Addr];
+	wire [10:0] nA;
+   assign nA = {~Addr[10], Addr[9:0]};
+	assign Data = rom[nA];
 endmodule

@@ -69,6 +69,7 @@
 `define mflo    6'b010010
 `define mthi    6'b010001
 `define mtlo    6'b010011
+`define andi    6'b001100
 `define op 31:26
 `define funct 5:0
 
@@ -76,10 +77,20 @@ module decoderTuse(
     input [31:0] Instr,
     output reg krt,
 	 output reg [1:0] Tuse1,
-	 output reg [1:0] Tuse2
+	 output reg [1:0] Tuse2,
+	 output tag
 	 );
+	 
+	 assign tag = (Instr[`funct] == `mult || Instr[`funct] == `multu || Instr[`funct] == `div ||
+					  Instr[`funct] == `divu || Instr[`funct] == `mthi || Instr[`funct] == `mtlo ||
+					  Instr[`funct] == `mfhi || Instr[`funct] == `mflo) && Instr[`op] == `special;
 	 always @(*) begin
 		case (Instr[`op])
+			`andi: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
 			`regimm:  begin
 				krt = 0;
 				Tuse1 = 2'b00;
@@ -151,10 +162,40 @@ module decoderTuse(
 				Tuse1 = 2'b00;
 				Tuse2 = 2'b00;
 			end
+			`lb: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`lbu: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`lh: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
+			`lhu: begin
+				krt = 0;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b00;
+			end
 			`lw: begin
 				krt = 0;
 				Tuse1 = 2'b01;
 				Tuse2 = 2'b00;
+			end
+			`sb: begin
+				krt = 1;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b10;
+			end
+			`sh: begin
+				krt = 1;
+				Tuse1 = 2'b01;
+				Tuse2 = 2'b10;
 			end
 			`sw: begin
 				krt = 1;
@@ -176,6 +217,10 @@ module decoderTnew(
 	 );
 	  always @(*) begin
 		case (Instr[`op])
+			`andi: begin
+				dreg = 0;
+				Tnew = 2'b10;
+			end
 			`sltiu: begin
 				dreg = 0;
 				Tnew = 2'b10;
@@ -217,6 +262,22 @@ module decoderTnew(
 					dreg = 2'b01;
 					Tnew = 2'b10;
 				end
+			`lb: begin
+				dreg = 0;
+				Tnew = 2'b11;
+			end
+			`lbu: begin
+				dreg = 0;
+				Tnew = 2'b11;
+			end
+			`lh: begin
+				dreg = 0;
+				Tnew = 2'b11;
+			end
+			`lhu: begin
+				dreg = 0;
+				Tnew = 2'b11;
+			end
 			`lw: begin
 				dreg = 0;
 				Tnew = 2'b11;

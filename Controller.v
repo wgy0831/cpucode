@@ -69,6 +69,7 @@
 `define mflo    6'b010010
 `define mthi    6'b010001
 `define mtlo    6'b010011
+`define andi    6'b001100
 `define op 31:26
 `define funct 5:0
 module ControllerD(
@@ -83,9 +84,10 @@ module ControllerD(
 	 assign Op = Instr[`op];
 	 assign Funct = Instr[`funct];
 	 assign npcsel = Op == `j || Op == `jal;
-	 assign RegWrite = Op == `ori || Op == `lw || Op == `jal || 
+	 assign RegWrite = Op == `ori || Op == `lw || Op == `jal || Op == `andi ||
 						Op == `lui || Op == `addi || Op == `addiu || 
 						Op == `xori || Op == `slti || Op == `sltiu ||
+						Op == `lb || Op == `lbu || Op == `lh || Op == `lhu ||
 						(Op == `special && Funct != `jr);
 	 always @(*) begin
 		 case(Op)
@@ -95,6 +97,10 @@ module ControllerD(
 			`blez: PCControl = b ? 1 : 0;
 			`sltiu: begin
 				EXTCon = 1;
+				PCControl = 0;
+			end
+			`andi: begin
+				EXTCon = 0;
 				PCControl = 0;
 			end
 			`slti: begin
@@ -117,7 +123,31 @@ module ControllerD(
 				EXTCon = 0;
 				PCControl = 0;
 			end
+			`lb: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`lbu: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`lh: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`lhu: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
 			`lw: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`sb: begin
+				EXTCon = 1;
+				PCControl = 0;
+			end
+			`sh: begin
 				EXTCon = 1;
 				PCControl = 0;
 			end
@@ -141,13 +171,28 @@ module ControllerE(
     input [31:0] Instr,
     output reg ALUAsrc,
     output reg ALUBsrc,
-    output reg [3:0] ALUControl
+    output reg [3:0] ALUControl,
+	 output mdused,
+	 output [2:0] mdCon,
+	 output [1:0] EAO
     );
 	 wire [5:0] Op, Funct;
 	 assign Op = Instr[`op];
 	 assign Funct = Instr[`funct];
+	 assign mdused = Op == `special && (Funct == `mult || Funct == `multu || Funct == `div ||
+												 Funct == `divu || Funct == `mthi || Funct == `mtlo);
+    assign EAO = (Op == `special && Funct == `mfhi) ? 1 : (Op == `special && Funct == `mflo) ? 2 : 0;
+	 assign mdCon = Funct == `mult ? 1 : Funct == `multu ? 2 : Funct == `div ? 3 :
+						 Funct == `divu ? 4 : Funct == `mthi ? 5 : Funct == `mtlo ? 6 : 0;
+	
 	always @(*) begin
 		case (Op)
+		`andi:
+		begin
+			ALUAsrc = 0;
+			ALUBsrc = 1;
+			ALUControl = 0;
+		end
 		`sltiu:
 		begin
 			ALUAsrc = 0;
@@ -190,7 +235,43 @@ module ControllerE(
 				ALUBsrc = 1;
 				ALUControl = 1;
 			end
+		`lb:
+			begin
+				ALUAsrc = 0;
+				ALUBsrc = 1;
+				ALUControl = 2;
+			end
+		`lbu:
+			begin
+				ALUAsrc = 0;
+				ALUBsrc = 1;
+				ALUControl = 2;
+			end
+		`lh:
+			begin
+				ALUAsrc = 0;
+				ALUBsrc = 1;
+				ALUControl = 2;
+			end
+		`lhu:
+			begin
+				ALUAsrc = 0;
+				ALUBsrc = 1;
+				ALUControl = 2;
+			end
 		`lw: 
+			begin
+				ALUAsrc = 0;
+				ALUBsrc = 1;
+				ALUControl = 2;
+			end
+		`sb:
+			begin
+				ALUAsrc = 0;
+				ALUBsrc = 1;
+				ALUControl = 2;
+			end
+		`sh:
 			begin
 				ALUAsrc = 0;
 				ALUBsrc = 1;
@@ -244,21 +325,29 @@ module ControllerE(
 endmodule
 module ControllerM(
     input [5:0] Op,
-    output MemWrite
+    output MemWrite,
+	 output [1:0] dmCon
     );
-	assign MemWrite = Op == `sw;
-
+	assign MemWrite = Op == `sw || Op == `sb || Op == `sh;
+	assign dmCon = Op == `sb ? 2 : Op == `sh ? 1 : 0;
 endmodule
 module ControllerW(
     input [31:0] Instr,
 	 output reg [1:0] RegDst,
-    output reg [1:0] MemtoReg
+    output reg [1:0] MemtoReg,
+	 output [2:0] ECon
     );
 	 wire [5:0] Op, Funct;
 	 assign Op = Instr[`op];
 	 assign Funct = Instr[`funct];
+	 assign ECon = Op == `lb? 2 : Op == `lbu? 1: Op == `lh? 4: Op == `lhu?3 : 0;
 	 always @(*) begin
 		 case(Op)
+			`andi:
+			begin
+				MemtoReg = 0;
+				RegDst = 0;
+			end
 			`sltiu:
 			begin
 				MemtoReg = 0;
@@ -287,6 +376,26 @@ module ControllerW(
 			`ori: 
 			begin
 				MemtoReg = 0;
+				RegDst = 0;
+			end
+			`lb:
+			begin
+				MemtoReg = 2;
+				RegDst = 0;
+			end
+			`lbu:
+			begin
+				MemtoReg = 2;
+				RegDst = 0;
+			end
+			`lh:
+			begin
+				MemtoReg = 2;
+				RegDst = 0;
+			end
+			`lhu:
+			begin
+				MemtoReg = 2;
 				RegDst = 0;
 			end
 			`lw: 

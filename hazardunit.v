@@ -33,6 +33,7 @@ module hazardunit(
 	input regWriteE,
 	input regWriteM,
 	input regWriteW,
+	input busy,
 	output stall,
 	output [1:0] ForwardRSD,
 	output [1:0] ForwardRTD,
@@ -40,18 +41,18 @@ module hazardunit(
 	output [1:0] ForwardRTE,
 	output ForwardRTM
     );
-	wire krtD, krtE, krtM;
+	wire krtD, krtE, krtM, mdtagD, mdtagE, mdtagW;
 	wire [1:0] Tuse1D, Tuse2D;
 	wire [1:0] Tuse1E, Tuse2E, dregE, TnewE;
 	wire [1:0] Tuse1M, Tuse2M, dregM, TnewM;
 	wire [1:0] dregW, TnewW;
-	wire stall_rt, stall_rs;
+	wire stall_rt, stall_rs, stall_md;
 	wire [4:0] regaddE, regaddM, regaddW;
 	wire [4:0] tregaddE, tregaddM, tregaddW;
 	
-	decoderTuse DdecoderTuse(InstrD, krtD, Tuse1D, Tuse2D);
-	decoderTuse EdecoderTuse(InstrE, krtE, Tuse1E, Tuse2E);
-	decoderTuse MdecoderTuse(InstrM, krtM, Tuse1M, Tuse2M);
+	decoderTuse DdecoderTuse(InstrD, krtD, Tuse1D, Tuse2D, mdtagD);
+	decoderTuse EdecoderTuse(InstrE, krtE, Tuse1E, Tuse2E, mdtagE);
+	decoderTuse MdecoderTuse(InstrM, krtM, Tuse1M, Tuse2M, mdtagW);
 
 	decoderTnew EdecoderTnew(InstrE, dregE, TnewE);
 	decoderTnew MdecoderTnew(InstrM, dregM, TnewM);
@@ -68,7 +69,9 @@ module hazardunit(
 							((regaddM != 0) && (InstrD[`rs] == regaddM) && (Tuse1D < (TnewM - 2)));
 	assign stall_rt = ((regaddE != 0) && (InstrD[`rt] == regaddE) && (Tuse2D < (TnewE - 1))) ||
 							((regaddM != 0) && (InstrD[`rt] == regaddM) && (Tuse2D < (TnewM - 2)));
-	assign stall = stall_rs || (stall_rt && krtD);
+	assign stall_md = busy && mdtagD;
+	
+	assign stall = stall_rs || (stall_rt && krtD) || stall_md;
 	
 	assign ForwardRSD = 
 			(Tuse1D == 2'b00) && (TnewE == 2'b01) && (regaddE != 0) && (InstrD[`rs] == regaddE) ? 1 :
