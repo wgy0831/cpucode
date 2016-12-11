@@ -34,7 +34,7 @@ module alu(
 		5 : Result = SrcB >> SrcA[4:0];
 		6 : Result = SrcA ^ SrcB;
 		7 : Result = SrcB << 16;
-		8 : Result = SrcB >>> SrcA[4:0];
+		8 : Result = $signed(SrcB) >>> SrcA[4:0];
 		9 : Result = ~ (SrcA | SrcB);
 		10: Result = SrcA[31] == SrcB[31] ? SrcA < SrcB : SrcA[31];
 		11: Result = SrcA < SrcB;
