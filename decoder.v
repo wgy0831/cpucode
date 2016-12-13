@@ -255,7 +255,7 @@ module decoderTnew(
 			end
 			`special:
 				if (Instr[`funct] == `jalr) begin
-					dreg = 2'b10;
+					dreg = 2'b01;
 					Tnew = 2'b01;
 				end else
 				begin

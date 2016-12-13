@@ -95,64 +95,16 @@ module ControllerD(
 //
 			`bgtz: PCControl = b ? 1 : 0;
 			`blez: PCControl = b ? 1 : 0;
-			`sltiu: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
 			`andi: begin
 				EXTCon = 0;
-				PCControl = 0;
-			end
-			`slti: begin
-				EXTCon = 1;
 				PCControl = 0;
 			end
 			`xori: begin
 				EXTCon = 0;
 				PCControl = 0;
 			end
-			`addi: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`addiu: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
 		   `ori: begin 
 				EXTCon = 0;
-				PCControl = 0;
-			end
-			`lb: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`lbu: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`lh: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`lhu: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`lw: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`sb: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`sh: begin
-				EXTCon = 1;
-				PCControl = 0;
-			end
-			`sw: begin
-				EXTCon = 1;
 				PCControl = 0;
 			end
 			`bne: PCControl = b? 1 : 0;
@@ -162,7 +114,10 @@ module ControllerD(
 			`special : 
 				if (Funct == `jalr || Funct == `jr) PCControl = 2;
 				else PCControl = 0;
-			default: PCControl = 0;
+			default: begin
+				PCControl = 0;
+				EXTCon = 1;
+			end
 		endcase
 	end
 
@@ -343,41 +298,6 @@ module ControllerW(
 	 assign ECon = Op == `lb? 2 : Op == `lbu? 1: Op == `lh? 4: Op == `lhu?3 : 0;
 	 always @(*) begin
 		 case(Op)
-			`andi:
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
-			`sltiu:
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
-			`slti:
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
-			`xori:
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
-			`addi:
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
-			`addiu:
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
-			`ori: 
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
 			`lb:
 			begin
 				MemtoReg = 2;
@@ -403,25 +323,18 @@ module ControllerW(
 				MemtoReg = 2;
 				RegDst = 0;
 			end 
-			`lui: 
-			begin
-				MemtoReg = 0;
-				RegDst = 0;
-			end
 			`jal: 
 			begin
 				MemtoReg = 1;
 				RegDst = 2;
 			end
-			`special: 
+			`special: begin
+				RegDst = 1;
 				if (Funct == `jalr)
-				begin
 					MemtoReg = 1;
-					RegDst = 2;
-				end else begin
+				else
 					MemtoReg = 0;
-					RegDst = 1;
-				end
+			end
 			default: begin
 				MemtoReg = 0;
 				RegDst = 0;

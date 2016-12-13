@@ -50,6 +50,6 @@ module muldivpart(
 				default: result <= result;
 			endcase
 		end
-		else if (state > 0) state <= state - 1'b1;
+		else if (busy) state <= state - 1'b1;
 	end
 endmodule
