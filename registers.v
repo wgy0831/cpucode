@@ -29,7 +29,7 @@ module registersD(
     );
 	always @(posedge Clk) begin
 	//	$display("%h", Instr);
-		if (Clr) begin
+		if (Clr && stall !== 1) begin
 			InstrD <= 0;
 			pca4D <= 0;
 		end else

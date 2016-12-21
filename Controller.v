@@ -70,6 +70,10 @@
 `define mthi    6'b010001
 `define mtlo    6'b010011
 `define andi    6'b001100
+`define cp0     6'b010000
+`define mt      5'b00100
+`define mf      5'b00000
+`define eret    6'b011000
 `define op 31:26
 `define funct 5:0
 module ControllerD(
@@ -78,9 +82,13 @@ module ControllerD(
     output reg [1:0] PCControl,
 	 output reg EXTCon,
 	 output npcsel,
-	 output RegWrite
+	 output RegWrite,
+	 output c0we,
+	 output EXLclr,
+	 output tuse0sel
     );
 	 wire [5:0] Op, Funct;
+	
 	 assign Op = Instr[`op];
 	 assign Funct = Instr[`funct];
 	 assign npcsel = Op == `j || Op == `jal;
@@ -88,7 +96,11 @@ module ControllerD(
 						Op == `lui || Op == `addi || Op == `addiu || 
 						Op == `xori || Op == `slti || Op == `sltiu ||
 						Op == `lb || Op == `lbu || Op == `lh || Op == `lhu ||
+						(Op == `cp0 && Instr[25:21] == `mf )|| 
 						(Op == `special && Funct != `jr);
+	assign c0we = Op == `cp0 && Instr[25:21] == `mt;
+	assign EXLclr = Op == `cp0 && Funct == `eret;
+	assign tuse0sel = Op == `cp0 && Instr[25:21] == `mf;
 	 always @(*) begin
 		 case(Op)
 			`regimm: PCControl = b ? 1 : 0;
@@ -298,6 +310,11 @@ module ControllerW(
 	 assign ECon = Op == `lb? 2 : Op == `lbu? 1: Op == `lh? 4: Op == `lhu?3 : 0;
 	 always @(*) begin
 		 case(Op)
+			`cp0:
+			begin
+				MemtoReg = 1;
+				RegDst = 0;
+			end
 			`lb:
 			begin
 				MemtoReg = 2;

@@ -70,6 +70,10 @@
 `define mthi    6'b010001
 `define mtlo    6'b010011
 `define andi    6'b001100
+`define cp0     6'b010000
+`define mt      5'b00100
+`define mf      5'b00000
+`define eret    6'b011000
 `define op 31:26
 `define funct 5:0
 
@@ -86,6 +90,17 @@ module decoderTuse(
 					  Instr[`funct] == `mfhi || Instr[`funct] == `mflo) && Instr[`op] == `special;
 	 always @(*) begin
 		case (Instr[`op])
+			`cp0:
+				if (Instr[25:21] == `mt) begin
+					krt = 1;
+					Tuse1 = 2'b11;
+					Tuse2 = 2'b00;
+				end
+				else begin
+					krt = 0;
+					Tuse1 = 2'b11;
+					Tuse2 = 2'b00;
+				end
 			`andi: begin
 				krt = 0;
 				Tuse1 = 2'b01;
@@ -217,6 +232,14 @@ module decoderTnew(
 	 );
 	  always @(*) begin
 		case (Instr[`op])
+			`cp0:
+				if (Instr[25:21] == `mf) begin
+					dreg = 0;
+					Tnew = 2'b01;
+				end else begin
+					dreg = 2'b11;
+					Tnew = 2'b00;
+				end
 			`andi: begin
 				dreg = 0;
 				Tnew = 2'b10;

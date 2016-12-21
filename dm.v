@@ -55,7 +55,7 @@ module dm(
 	if (reset) begin
 		for(i = 0; i <2048; i=i+1) ram[i] <= 0;
 	end else
-		if (MemWrite) begin
+		if (MemWrite && MemAddr[15:13] == 0) begin
 					ram[addr] <= memin;
 					case (dmCon)
 						0: $display("*%h <= %h", MemAddr, Memdata);
