@@ -22,7 +22,7 @@
 module bridge(
     input clk,
 	 input reset,
-    input [31:2] addr,
+    input [31:0] addr,
     output [31:0] dataO,
     input [31:0] dataI,
     input we,

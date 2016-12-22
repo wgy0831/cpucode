@@ -50,7 +50,7 @@ module cp0(
 			ie <= 1;
 		end else begin
 			if (IntReq) begin
-				EPC <= bd ? PCa4-1 : PCa4;
+				EPC <= bd ? PCa4-4 : PCa4;
 				exl <= 1;
 				ip <= HWInt;
 				ExcCode <= 0;

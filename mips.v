@@ -35,7 +35,7 @@
 module mipscpu(
     input clk,
     input reset,
-	 output [31:2] praddr,
+	 output [31:0] praddr,
 	 input [31:0] prrd,
 	 output [31:0] prwd,
 	 output prwe,
@@ -65,13 +65,13 @@ module mipscpu(
 	 im mim(pc[12:2], Instr);
 	 mux2 intpcsel(EXLclr, PCinput, EPC, newPCinput);
 	 mux2 entrance(IntReq, newPCinput, 32'h4180, finalPC);
-	 ifu mifu(finalPC, clk, reset, stall, pc, ADD4);
+	 ifu mifu(finalPC, clk, reset, stall, IntReq, pc, ADD4);
 	 mux4 MUX_PC(PCCon, ADD4, NPCout, Drs, 32'bx, PCinput);
 	 
-	 registersD mregistersD(Instr, InstrD, ADD4, PC4_D, clk, stall, reset || IntReq);
+	 registersD mregistersD(Instr, InstrD, ADD4, PC4_D, clk, stall, reset || IntReq || EXLclr);
 	 //assign ExcCode = 5'b0;
 	 ControllerD mControllerD(InstrD, cmpout, PCCon, extcon, npcsel, regWriteD, c0we, EXLclr, tuse0sel);
-	 cp0 mcp0(InstrD[15:11], Drt, PC4_D, HWInt, PCCon == 1 || PCCon == 2, c0we, EXLclr, clk, reset, IntReq, EPC, cp0out);
+	 cp0 mcp0(InstrD[15:11], Drt, pc, HWInt, PCCon == 1 || PCCon == 2, c0we, EXLclr, clk, reset, IntReq, EPC, cp0out);
 	 grf mgrf(clk, reset, InstrD[25:21], InstrD[20:16], RegAddr[4:0], regWriteW, WData, RData1, RData2);
 	 ext mext(InstrD[15:0], extcon, extout);
 	// Controller controller(instr[31:26],instr[5:0],zero,MemtoReg,MemWrite,ALUAsrc,ALUBsrc,RegDst,RegWrite,PCControl,ALUControl);
@@ -79,7 +79,7 @@ module mipscpu(
 	 npc mnpc(npcsel, PC4_D, InstrD[25:0], InstrD[15:0], NPCout);
 	 mux2 tuse0(tuse0sel, PC4_D + 4, cp0out, tuse0data);
 	 
-	 registersE mregistersE(clk, stall, InstrD, InstrE, tuse0data, PC4_E, Drs, rsE, Drt, rtE, extout, extE, regWriteD, regWriteE, reset || Instr[31:26] == 6'b010000 && Instr[5:0] == 6'b011000);
+	 registersE mregistersE(clk, stall, InstrD, InstrE, tuse0data, PC4_E, Drs, rsE, Drt, rtE, extout, extE, regWriteD, regWriteE, reset);
 	 
 	 ControllerE mControllerE(InstrE, ALUAsrc, ALUBsrc, ALUControl, used, mdCon, EAO);
 	 mux2 ALUAsel(ALUAsrc, Ers, {27'b0,InstrE[10:6]}, SrcA);
@@ -90,7 +90,7 @@ module mipscpu(
 	 
 	 registersM mregistersM(clk, InstrE, InstrM, PC4_E, PC4_M, AOE, AOM, Ert, rtM, regWriteE, regWriteM, reset);
 	 
-	 assign praddr = AOM[31:2];
+	 assign praddr = AOM;
 	 assign prwd = Mrt;
 	 assign prwe = MemWrite;
 	 ControllerM mControllerM(InstrM[31:26], MemWrite, dmCon);
@@ -113,7 +113,7 @@ module mips(
     input clk,
     input reset
     );  
-	 wire [31:2] addr;
+	 wire [31:0] addr;
 	 wire [31:0] prrd, prwd;
 	 wire prwe;
 	 wire [7:2] HWInt;

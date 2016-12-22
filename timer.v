@@ -37,7 +37,7 @@ module timer(
 			2: datao = count;
 			3: datao = 0;
 		endcase
-	assign irq = mode == 0 && count == 0 && im;
+	assign irq = count == 0 && im;
 	always @(posedge clk)
 		if (reset) begin
 			im <= 0;
@@ -45,15 +45,22 @@ module timer(
 			mode <= 0;
 			preset <= 0;
 			count <= 0;
-		end else begin
-			if (count > 0 && enable) count <= count - 1;
-			if (count == 0 && mode == 1) count <= preset;
-			if (we)
-				case(addr)
-					0: begin im <= datai[3]; mode <= datai[2:1]; enable <= datai[0]; end
-					1: preset <= datai;
+		end else if (we)
+			case(addr)
+					0: begin 
+						im <= datai[3]; 
+						mode <= datai[2:1]; 
+						enable <= datai[0]; 
+						count <= preset;
+						end
+					1: begin preset <= datai; count <= datai; end
 					2: count <= datai;
-				endcase
-		end
+				endcase 
+				else if (count > 0) begin
+				if (enable) count <= count - 1;
+				if (count - 1 == 0 && mode != 1) enable <= 0;
+			end else 
+				if (enable) count <= preset;
+				
 
 endmodule
