@@ -25,11 +25,12 @@ module registersD(
     output reg [31:0] pca4D,
     input Clk,
 	 input stall,
-	 input Clr
+	 input Clr,
+	 input stall_E
     );
 	always @(posedge Clk) begin
 	//	$display("%h", Instr);
-		if (Clr && stall !== 1) begin
+		if (Clr && ((stall !== 1) || stall_E) ) begin
 			InstrD <= 0;
 			pca4D <= 0;
 		end else
@@ -42,6 +43,7 @@ endmodule
 module registersE(
     input Clk,
 	 input stall,
+	 input stall_E,
     input [31:0] Instr,
     output reg [31:0] InstrE,
     input [31:0] pca4,
@@ -57,14 +59,14 @@ module registersE(
 	 input Clr
     );
 	always @(posedge Clk) begin
-		if (Clr || stall) begin
+		if ((Clr || stall) && stall_E !== 1) begin
 			InstrE <= 0;
 			pca4E <= 0;
 			rsE <= 0;
 			rtE <= 0;
 			extE <= 0;
 			regWriteE <= 0;
-		end else begin
+		end else if (!stall_E) begin
 			InstrE <= Instr;
 			pca4E <= pca4;
 			rsE <= rs;

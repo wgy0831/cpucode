@@ -50,12 +50,12 @@ module mipscpu(
 	 wire [3:0] ALUControl;
 	 wire [2:0] mdCon, ECon;
 	 wire [6:2] ExcCode;
-	 wire regWriteD, regWriteE, regWriteM, regWriteW, c0we, EXLclr, IntReq;
+	 wire regWriteD, regWriteE, regWriteM, regWriteW, c0we, EXLclr, IntReq, stall_E;
 	// assign pca4 = pc + 4;
 	// assign luidata = zimm16 << 16;
 	// assign MemAddr = ALUResult;
 	// assign Memdata = RData2;
-	 hazardunit mhazardunit(InstrD, InstrE, InstrM, InstrW, regWriteE, regWriteM, regWriteW, busy, stall, ForRSD, ForRTD, ForRSE, ForRTE, ForRTM);
+	 hazardunit mhazardunit(InstrD, InstrE, InstrM, InstrW, regWriteE, regWriteM, regWriteW, busy, stall, stall_E, ForRSD, ForRTD, ForRSE, ForRTE, ForRTM);
 	 mux4 MFRSD(ForRSD, RData1, PC4_E, PC4_M, AOM, Drs);
 	 mux4 MFRTD(ForRTD, RData2, PC4_E, PC4_M, AOM, Drt);
 	 mux4 MFRSE(ForRSE, rsE, PC4_M, AOM, WData, Ers);
@@ -68,10 +68,10 @@ module mipscpu(
 	 ifu mifu(finalPC, clk, reset, stall, IntReq, pc, ADD4);
 	 mux4 MUX_PC(PCCon, ADD4, NPCout, Drs, 32'bx, PCinput);
 	 
-	 registersD mregistersD(Instr, InstrD, ADD4, PC4_D, clk, stall, reset || IntReq || EXLclr);
+	 registersD mregistersD(Instr, InstrD, ADD4, PC4_D, clk, stall, reset || IntReq || EXLclr, stall_E);
 	 //assign ExcCode = 5'b0;
 	 ControllerD mControllerD(InstrD, cmpout, PCCon, extcon, npcsel, regWriteD, c0we, EXLclr, tuse0sel);
-	 cp0 mcp0(InstrD[15:11], Drt, pc, HWInt, PCCon == 1 || PCCon == 2, c0we, EXLclr, clk, reset, IntReq, EPC, cp0out);
+	 cp0 mcp0(InstrD[15:11], Drt, pc, HWInt, PCCon == 1 || PCCon == 2, stall_E, c0we, EXLclr, clk, reset, IntReq, EPC, cp0out);
 	 grf mgrf(clk, reset, InstrD[25:21], InstrD[20:16], RegAddr[4:0], regWriteW, WData, RData1, RData2);
 	 ext mext(InstrD[15:0], extcon, extout);
 	// Controller controller(instr[31:26],instr[5:0],zero,MemtoReg,MemWrite,ALUAsrc,ALUBsrc,RegDst,RegWrite,PCControl,ALUControl);
@@ -79,7 +79,7 @@ module mipscpu(
 	 npc mnpc(npcsel, PC4_D, InstrD[25:0], InstrD[15:0], NPCout);
 	 mux2 tuse0(tuse0sel, PC4_D + 4, cp0out, tuse0data);
 	 
-	 registersE mregistersE(clk, stall, InstrD, InstrE, tuse0data, PC4_E, Drs, rsE, Drt, rtE, extout, extE, regWriteD, regWriteE, reset);
+	 registersE mregistersE(clk, stall, stall_E, InstrD, InstrE, tuse0data, PC4_E, Drs, rsE, Drt, rtE, extout, extE, regWriteD, regWriteE, reset);
 	 
 	 ControllerE mControllerE(InstrE, ALUAsrc, ALUBsrc, ALUControl, used, mdCon, EAO);
 	 mux2 ALUAsel(ALUAsrc, Ers, {27'b0,InstrE[10:6]}, SrcA);
@@ -88,7 +88,7 @@ module mipscpu(
 	 muldivpart mmuldiv(SrcA, SrcB, mdCon, HI, LO, busy, used, reset, clk);
 	 mux4 AOMsel(EAO, ALUResult, HI, LO, 32'bx, AOE);
 	 
-	 registersM mregistersM(clk, InstrE, InstrM, PC4_E, PC4_M, AOE, AOM, Ert, rtM, regWriteE, regWriteM, reset);
+	 registersM mregistersM(clk, InstrE, InstrM, PC4_E, PC4_M, AOE, AOM, Ert, rtM, regWriteE, regWriteM, reset || stall_E);
 	 
 	 assign praddr = AOM;
 	 assign prwd = Mrt;

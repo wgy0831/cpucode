@@ -25,6 +25,7 @@ module cp0(
    // input [6:2] ExcCode,
     input [5:0] HWInt,
 	 input bd,
+	 input stall_E,
     input we,
     input EXLClr,
     input clk,
@@ -50,7 +51,7 @@ module cp0(
 			ie <= 1;
 		end else begin
 			if (IntReq) begin
-				EPC <= bd ? PCa4-4 : PCa4;
+				EPC <= bd || stall_E ? PCa4-4 : PCa4;
 				exl <= 1;
 				ip <= HWInt;
 				ExcCode <= 0;

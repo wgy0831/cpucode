@@ -35,6 +35,7 @@ module hazardunit(
 	input regWriteW,
 	input busy,
 	output stall,
+	output stall_E,
 	output [1:0] ForwardRSD,
 	output [1:0] ForwardRTD,
 	output [1:0] ForwardRSE,
@@ -71,7 +72,9 @@ module hazardunit(
 							((regaddM != 0) && (InstrD[`rt] == regaddM) && (Tuse2D < (TnewM - 2)));
 	assign stall_md = busy && mdtagD;
 	
-	assign stall = stall_rs || (stall_rt && krtD) || stall_md;
+	assign stall_E = busy && mdtagE;
+	assign stall = stall_rs || (stall_rt && krtD) || stall_md || stall_E;
+	
 	
 	assign ForwardRSD = 
 			(Tuse1D == 2'b00) && (TnewE == 2'b01) && (regaddE != 0) && (InstrD[`rs] == regaddE) ? 1 :
